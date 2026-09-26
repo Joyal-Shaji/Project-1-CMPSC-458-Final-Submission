@@ -1,10 +1,18 @@
 /*
 	Project 1 Submission for CMPSC458
-    Name: Joe Smith
-	psu id: xyz123
+    Name: Joyal Shaji
+	psu id: jxs7202
 */
 
 #include <Project1.hpp>
+#include <string>
+
+namespace {
+std::string projectAssetPath(const char* relativePath)
+{
+	return std::string(PROJECT_SOURCE_DIR) + "/" + relativePath;
+}
+}
 
 // globals 
 	// settings
@@ -83,7 +91,8 @@ int main(int argc, char **argv)
 
 	// build and compile our shader program (defined in shader.hpp)
 	// ------------------------------------
-	Shader ourShader("../Project_1/Shaders/shader.vert", "../Project_1/Shaders/shader.frag");
+	Shader ourShader(projectAssetPath("Project_1/Shaders/shader.vert").c_str(),
+		projectAssetPath("Project_1/Shaders/shader.frag").c_str());
 
 	// set up vertex data (and buffer(s)) and configure vertex attributes for boxes
 	// ------------------------------------------------------------------
@@ -183,9 +192,9 @@ int main(int argc, char **argv)
 	glEnableVertexAttribArray(1);
 
 
-	unsigned int box_texture = loadTexture("../Project_1/Media/textures/container.jpg");
-	unsigned int smile_texture = loadTexture("../Project_1/Media/textures/awesomeface.png");
-	unsigned int front_texture = loadTexture("../Project_1/Media/skybox/front.jpg");
+	unsigned int box_texture = loadTexture(projectAssetPath("Project_1/Media/textures/container.jpg").c_str());
+	unsigned int smile_texture = loadTexture(projectAssetPath("Project_1/Media/textures/awesomeface.png").c_str());
+	unsigned int front_texture = loadTexture(projectAssetPath("Project_1/Media/skybox/front.jpg").c_str());
 
 
 	// tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
@@ -197,7 +206,7 @@ int main(int argc, char **argv)
 	ourShader.setInt("texture2", 1);
 
 	// init heightmap (defined in heightmap.hpp)
-	Heightmap heightmap("../Project_1/Media/heightmaps/hflab4.jpg");
+	Heightmap heightmap(projectAssetPath("Project_1/Media/heightmaps/hflab4.jpg").c_str());
 	
 	
 
@@ -246,7 +255,7 @@ int main(int argc, char **argv)
 		for (unsigned int i = 0; i < 10; i++)
 		{
 			// calculate the model matrix for each object and pass it to shader before drawing
-			glm::mat4 model;
+			glm::mat4 model(1.0f);
 			// Translate the model to the cube starting position
 			model = glm::translate(model, cubePositions[i]);
 			// Rotate the cube by an angle
