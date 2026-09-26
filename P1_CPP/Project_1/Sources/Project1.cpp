@@ -12,6 +12,21 @@ std::string projectAssetPath(const char* relativePath)
 {
 	return std::string(PROJECT_SOURCE_DIR) + "/" + relativePath;
 }
+// Transformation variables
+const float rotationRateStep = 90.0f;
+const float transformStep = 0.5f;
+float xRotationRate = 0.0f;
+float yRotationRate = 0.0f;
+float zRotationRate = 0.0f;
+float xRotation = 0.0f;
+float yRotation = 0.0f;
+float zRotation = 0.0f;
+float xScale = 1.0f;
+float yScale = 1.0f;
+float zScale = 1.0f;
+float xPosition = 0.0f;
+float yPosition = 0.0f;
+float zPosition = 0.0f;
 }
 
 // globals 
@@ -223,6 +238,9 @@ int main(int argc, char **argv)
 		// input
 		// -----
 		processInput(window);
+		xRotation += xRotationRate * deltaTime;
+		yRotation += yRotationRate * deltaTime;
+		zRotation += zRotationRate * deltaTime;
 
 		// render
 		// ------
@@ -257,10 +275,12 @@ int main(int argc, char **argv)
 			// calculate the model matrix for each object and pass it to shader before drawing
 			glm::mat4 model(1.0f);
 			// Translate the model to the cube starting position
-			model = glm::translate(model, cubePositions[i]);
-			// Rotate the cube by an angle
-			float angle = 20.0f * i;
-			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.0f, 0.0f));
+			model = glm::translate(model, cubePositions[i] + glm::vec3(xPosition, yPosition, zPosition));
+			// Keep each box's original X rotation and add the user-controlled rotations.
+			model = glm::rotate(model, glm::radians(20.0f * i + xRotation), glm::vec3(1.0f, 0.0f, 0.0f));
+			model = glm::rotate(model, glm::radians(yRotation), glm::vec3(0.0f, 1.0f, 0.0f));
+			model = glm::rotate(model, glm::radians(zRotation), glm::vec3(0.0f, 0.0f, 1.0f));
+			model = glm::scale(model, glm::vec3(xScale, yScale, zScale));
 
 			// Set model in shader
 			ourShader.setMat4("model", model);
@@ -277,7 +297,7 @@ int main(int argc, char **argv)
 
 
 		// Make the model for one wall and shift/scale it
-		glm::mat4 model;
+		glm::mat4 model(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(100.0f, 100.0f, 100.0f));
 
@@ -322,6 +342,153 @@ void processInput(GLFWwindow *window)
 		camera.ProcessKeyboard(RIGHT, deltaTime);
 
 	// Add other key operations here.  
+	// Controls for transformations
+	bool scaleable = false;
+	bool translation = false;
+	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
+		{
+			scaleable = true;
+		}
+		if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) || glfwGetKey(window, GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS)
+		{
+			translation = true;
+		}
+		if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)	//U
+		{
+			if (scaleable)
+			{
+				xScale += 0.5f * deltaTime;
+				std::cout << "Scaleable = true" << std::endl;
+			}
+			else if (translation)
+			{
+				xPosition += 0.5f * deltaTime;
+				std::cout << "Translation = true" << std::endl;
+			}
+			else
+			{
+				xRotationRate += rotationRateStep * deltaTime;
+				std::cout << "Increase Rotation Rate in X axis " << std::endl;
+			}
+			
+		}
+		if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)	//J
+		{
+			if (scaleable)
+			{
+				xScale = std::max(0.0f, xScale - 0.5f * deltaTime);
+				std::cout << "Scaleable = true" << std::endl;
+			}
+			else if (translation)
+			{
+				xPosition -= 0.5f * deltaTime;
+				std::cout << "Translation = true" << std::endl;
+			}
+			else
+			{
+			xRotationRate = std::max(0.0f, xRotationRate - rotationRateStep * deltaTime);
+			std::cout << "Decrease Rotation Rate in X axis" << std::endl;
+			}
+		}
+		if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS)	//I
+		{
+			if (scaleable)
+			{
+				yScale += 0.5f * deltaTime;
+				std::cout << "Scaleable = true" << std::endl;
+			}
+			else if (translation)
+			{
+				yPosition += 0.5f * deltaTime;
+				std::cout << "Translation = true" << std::endl;
+			}
+			else
+			{
+			yRotationRate += rotationRateStep * deltaTime;
+			std::cout << "Increase Rotation Rate in Y axis" << std::endl;
+			}
+		}
+		if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)	//K
+		{
+			if (scaleable)
+			{
+				yScale = std::max(0.0f, yScale - 0.5f * deltaTime);
+				std::cout << "Scaleable = true" << std::endl;
+			}
+			else if (translation)
+			{
+				yPosition -= 0.5f * deltaTime;
+				std::cout << "Translation = true" << std::endl;
+			}
+			else
+			{
+			yRotationRate = std::max(0.0f, yRotationRate - rotationRateStep * deltaTime);
+			std::cout << "Decrease Rotation Rate in Y axis" << std::endl;
+			}
+		}
+		if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS)	//O
+		{
+			if (scaleable)
+			{
+				zScale += 0.5f * deltaTime;
+				std::cout << "Scaleable = true" << std::endl;
+			}
+			else if (translation)
+			{
+				zPosition += 0.5f * deltaTime;
+				std::cout << "Translation = true" << std::endl;
+			}
+			else
+			{
+			zRotationRate += rotationRateStep * deltaTime;
+			std::cout << "Increase Rotation Rate in Z axis" << std::endl;
+			}
+		}
+		if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)	//L
+		{
+			if (scaleable)
+			{
+				zScale = std::max(0.0f, zScale - 0.5f * deltaTime);
+				std::cout << "Scaleable = true" << std::endl;
+			}
+			else if (translation)
+			{
+				zPosition -= 0.5f * deltaTime;
+				std::cout << "Translation = true" << std::endl;
+			}
+			else
+			{
+			zRotationRate = std::max(0.0f, zRotationRate - rotationRateStep * deltaTime);
+			std::cout << "Decrease Rotation Rate in Z axis" << std::endl;
+			}
+		}
+		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)	//R
+		{
+			// Reset all rotation rates to 1.0f
+			xRotationRate = 0.0f;
+			yRotationRate = 0.0f;
+			zRotationRate = 0.0f;
+			xRotation = 0.0f;
+			yRotation = 0.0f;
+			zRotation = 0.0f;
+			// Reset scale
+			xScale = 1.0f;
+			yScale = 1.0f;
+			zScale = 1.0f;
+			//Reset positions
+			xPosition = 0.0f;
+			yPosition = 0.0f;
+			zPosition = 0.0f;
+			std::cout << "Reset all transformations" << std::endl;
+		}
+		if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)	//P
+		{
+			xScale += 0.5f * deltaTime;
+			yScale += 0.5f * deltaTime;
+			zScale += 0.5f * deltaTime;
+			std::cout << "Scaleable = true" << std::endl;
+		}
+
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
