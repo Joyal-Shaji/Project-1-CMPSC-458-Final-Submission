@@ -2,9 +2,9 @@
 
 Please fill out the README's content in your intermediate submission 2 and final submission.
 
-Student Name: 
-Student ID: 
-Email:
+Student Name: Joyal Shaji
+Student ID: 975702213
+Email: jxs7202@psu.edu
 
 ## How to run the Project
 
