@@ -5,6 +5,7 @@
 */
 
 #include <Project1.hpp>
+#include <cmath>
 #include <string>
 
 namespace {
@@ -206,10 +207,52 @@ int main(int argc, char **argv)
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
+	// Give the skybox its own vertex data so its UV rotation does not affect the boxes.
+	float skyboxVertices[sizeof(vertices) / sizeof(vertices[0])];
+	for (unsigned int i = 0; i < sizeof(vertices) / sizeof(vertices[0]); ++i)
+		skyboxVertices[i] = vertices[i];
+
+	// Face order: back, front, left, right, bottom, top
+	const float skyboxFaceRotationDegrees[6] = { 0.0f, 0.0f, 90.0f, 90.0f, 90.0f, 90.0f };
+	const bool skyboxFaceMirrored[6] = { true, false, false, false, true, false };
+	for (unsigned int face = 0; face < 6; ++face)	// Rotating the UV coordinates of each face of the skybox to match the orientation of the texture images
+	{
+		const float angle = glm::radians(skyboxFaceRotationDegrees[face]);
+		const float c = std::cos(angle);
+		const float s = std::sin(angle);
+		for (unsigned int vertex = 0; vertex < 6; ++vertex)
+		{
+			const unsigned int uv = (face * 6 + vertex) * 5 + 3;
+			const float originalU = skyboxVertices[uv];
+			const float v = skyboxVertices[uv + 1];
+			const float u = skyboxFaceMirrored[face] ? 1.0f - originalU : originalU;
+			const float x = u - 0.5f;
+			const float y = 0.5f - v;
+			skyboxVertices[uv] = c * x + s * y + 0.5f;
+			skyboxVertices[uv + 1] = 0.5f + s * x - c * y;
+		}
+	}
+
+	unsigned int skyboxVAO, skyboxVBO;
+	glGenVertexArrays(1, &skyboxVAO);
+	glGenBuffers(1, &skyboxVBO);
+	glBindVertexArray(skyboxVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), skyboxVertices, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
 
 	unsigned int box_texture = loadTexture(projectAssetPath("Project_1/Media/textures/container.jpg").c_str());
 	unsigned int smile_texture = loadTexture(projectAssetPath("Project_1/Media/textures/awesomeface.png").c_str());
 	unsigned int front_texture = loadTexture(projectAssetPath("Project_1/Media/skybox/front.jpg").c_str());
+	unsigned int back_texture = loadTexture(projectAssetPath("Project_1/Media/skybox/back.jpg").c_str());
+	unsigned int bottom_texture = loadTexture(projectAssetPath("Project_1/Media/skybox/bottom.jpg").c_str());
+	unsigned int right_texture = loadTexture(projectAssetPath("Project_1/Media/skybox/left.jpg").c_str());
+	unsigned int left_texture = loadTexture(projectAssetPath("Project_1/Media/skybox/right.jpg").c_str());
+	unsigned int top_texture = loadTexture(projectAssetPath("Project_1/Media/skybox/top.jpg").c_str());
 
 
 	// tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
@@ -289,21 +332,26 @@ int main(int argc, char **argv)
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 
-		// Bind new textures to boh texture positions (do both since it has 2 textures in the vertex shader)
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, front_texture);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, front_texture);
-
-
-		// Make the model for one wall and shift/scale it
-		glm::mat4 model(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(100.0f, 100.0f, 100.0f));
-
-		// Set model in shader
-		ourShader.setMat4("model", model);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		// Draw the six skybox faces
+		const unsigned int skyboxTextures[] = {
+			back_texture, front_texture, left_texture,
+			right_texture, bottom_texture, top_texture
+		};
+		// Set the model matrix for the skybox to be large and centered around the camera
+		glm::mat4 skyboxModel(1.0f);
+		skyboxModel = glm::translate(skyboxModel, glm::vec3(0.0f, 0.0f, 1.0f));
+		skyboxModel = glm::scale(skyboxModel, glm::vec3(100.0f));
+		ourShader.setMat4("model", skyboxModel);
+		
+		glBindVertexArray(skyboxVAO);
+		for (unsigned int face = 0; face < 6; ++face)
+		{
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, skyboxTextures[face]);
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, skyboxTextures[face]);
+			glDrawArrays(GL_TRIANGLES, face * 6, 6);
+		}
 
 		// Draw the heightmap (defined in heightmap.hpp)  Similar to above but you have to write it.
 		//heightmap.Draw(ourShader, box_texture);
@@ -317,7 +365,9 @@ int main(int argc, char **argv)
 	// optional: de-allocate all resources once they've outlived their purpose:
 	// ------------------------------------------------------------------------
 	glDeleteVertexArrays(1, &VAO);
+	glDeleteVertexArrays(1, &skyboxVAO);
 	glDeleteBuffers(1, &VBO);
+	glDeleteBuffers(1, &skyboxVBO);
 
 	// glfw: terminate, clearing all previously allocated GLFW resources.
 	// ------------------------------------------------------------------
