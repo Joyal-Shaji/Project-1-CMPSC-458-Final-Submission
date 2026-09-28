@@ -15,7 +15,6 @@ std::string projectAssetPath(const char* relativePath)
 }
 // Transformation variables
 const float rotationRateStep = 90.0f;
-const float transformStep = 0.5f;
 float xRotationRate = 0.0f;
 float yRotationRate = 0.0f;
 float zRotationRate = 0.0f;
@@ -266,7 +265,7 @@ int main(int argc, char **argv)
 	// Choose the heightmap image and terrain texture here. Place a custom terrain
 	// texture in Project_1/Media/textures and update terrainTexturePath.
 	//hflab4.jpg, spiral.jpg,heightmap1.jpeg
-	const char* heightmapImagePath = "Project_1/Media/heightmaps/spiral.jpg";
+	const char* heightmapImagePath = "Project_1/Media/heightmaps/hflab4.jpg";
 	//PrototypeHeightMapTexture.png, Texture1.png, dirtTexture.jpg
 	const char* terrainTexturePath = "Project_1/Media/textures/Texture1.png";
 	unsigned int terrainTexture = loadTexture(projectAssetPath(terrainTexturePath).c_str());
@@ -418,17 +417,17 @@ void processInput(GLFWwindow *window)
 			if (scaleable)
 			{
 				xScale += 0.5f * deltaTime;
-				std::cout << "Scaleable = true" << std::endl;
+				//std::cout << "Scaleable = true" << std::endl;
 			}
 			else if (translation)
 			{
 				xPosition += 0.5f * deltaTime;
-				std::cout << "Translation = true" << std::endl;
+				//std::cout << "Translation = true" << std::endl;
 			}
 			else
 			{
 				xRotationRate += rotationRateStep * deltaTime;
-				std::cout << "Increase Rotation Rate in X axis " << std::endl;
+				//std::cout << "Increase Rotation Rate in X axis " << std::endl;
 			}
 			
 		}
@@ -437,17 +436,17 @@ void processInput(GLFWwindow *window)
 			if (scaleable)
 			{
 				xScale = std::max(0.0f, xScale - 0.5f * deltaTime);
-				std::cout << "Scaleable = true" << std::endl;
+				//std::cout << "Scaleable = true" << std::endl;
 			}
 			else if (translation)
 			{
 				xPosition -= 0.5f * deltaTime;
-				std::cout << "Translation = true" << std::endl;
+				//std::cout << "Translation = true" << std::endl;
 			}
 			else
 			{
 			xRotationRate = std::max(0.0f, xRotationRate - rotationRateStep * deltaTime);
-			std::cout << "Decrease Rotation Rate in X axis" << std::endl;
+			//std::cout << "Decrease Rotation Rate in X axis" << std::endl;
 			}
 		}
 		if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS)	//I
@@ -455,17 +454,17 @@ void processInput(GLFWwindow *window)
 			if (scaleable)
 			{
 				yScale += 0.5f * deltaTime;
-				std::cout << "Scaleable = true" << std::endl;
+				//std::cout << "Scaleable = true" << std::endl;
 			}
 			else if (translation)
 			{
 				yPosition += 0.5f * deltaTime;
-				std::cout << "Translation = true" << std::endl;
+				//std::cout << "Translation = true" << std::endl;
 			}
 			else
 			{
 			yRotationRate += rotationRateStep * deltaTime;
-			std::cout << "Increase Rotation Rate in Y axis" << std::endl;
+			//std::cout << "Increase Rotation Rate in Y axis" << std::endl;
 			}
 		}
 		if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)	//K
@@ -473,17 +472,17 @@ void processInput(GLFWwindow *window)
 			if (scaleable)
 			{
 				yScale = std::max(0.0f, yScale - 0.5f * deltaTime);
-				std::cout << "Scaleable = true" << std::endl;
+				//std::cout << "Scaleable = true" << std::endl;
 			}
 			else if (translation)
 			{
 				yPosition -= 0.5f * deltaTime;
-				std::cout << "Translation = true" << std::endl;
+				//std::cout << "Translation = true" << std::endl;
 			}
 			else
 			{
 			yRotationRate = std::max(0.0f, yRotationRate - rotationRateStep * deltaTime);
-			std::cout << "Decrease Rotation Rate in Y axis" << std::endl;
+			//std::cout << "Decrease Rotation Rate in Y axis" << std::endl;
 			}
 		}
 		if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS)	//O
@@ -491,17 +490,17 @@ void processInput(GLFWwindow *window)
 			if (scaleable)
 			{
 				zScale += 0.5f * deltaTime;
-				std::cout << "Scaleable = true" << std::endl;
+				//std::cout << "Scaleable = true" << std::endl;
 			}
 			else if (translation)
 			{
 				zPosition += 0.5f * deltaTime;
-				std::cout << "Translation = true" << std::endl;
+				//std::cout << "Translation = true" << std::endl;
 			}
 			else
 			{
 			zRotationRate += rotationRateStep * deltaTime;
-			std::cout << "Increase Rotation Rate in Z axis" << std::endl;
+			//std::cout << "Increase Rotation Rate in Z axis" << std::endl;
 			}
 		}
 		if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)	//L
@@ -509,17 +508,17 @@ void processInput(GLFWwindow *window)
 			if (scaleable)
 			{
 				zScale = std::max(0.0f, zScale - 0.5f * deltaTime);
-				std::cout << "Scaleable = true" << std::endl;
+				//std::cout << "Scaleable = true" << std::endl;
 			}
 			else if (translation)
 			{
 				zPosition -= 0.5f * deltaTime;
-				std::cout << "Translation = true" << std::endl;
+				//std::cout << "Translation = true" << std::endl;
 			}
 			else
 			{
 			zRotationRate = std::max(0.0f, zRotationRate - rotationRateStep * deltaTime);
-			std::cout << "Decrease Rotation Rate in Z axis" << std::endl;
+			//std::cout << "Decrease Rotation Rate in Z axis" << std::endl;
 			}
 		}
 		if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)	//R
@@ -539,14 +538,14 @@ void processInput(GLFWwindow *window)
 			xPosition = 0.0f;
 			yPosition = 0.0f;
 			zPosition = 0.0f;
-			std::cout << "Reset all transformations" << std::endl;
+			//std::cout << "Reset all transformations" << std::endl;
 		}
 		if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)	//P
 		{
 			xScale += 0.5f * deltaTime;
 			yScale += 0.5f * deltaTime;
 			zScale += 0.5f * deltaTime;
-			std::cout << "Scaleable = true" << std::endl;
+			//std::cout << "Scaleable = true" << std::endl;
 		}
 
 }
