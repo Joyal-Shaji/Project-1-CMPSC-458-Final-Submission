@@ -11,7 +11,7 @@ Email: jxs7202@psu.edu
 Open the .exe file and you will be presented with some boxes with awesome faces on them. You can move around using W(forward), A(left), S(back), D(right), and the mouse to look around; You can also scroll to zoom in and out. 
 
 To control the boxes:
-    - U: Increase rotation rate in X axis
+- U: Increase rotation rate in X axis
     - J: Decrease rotation rate in X axis
     - I: Increase rotation rate in Y axis
     - K: Decrease rotation rate in Y axis
