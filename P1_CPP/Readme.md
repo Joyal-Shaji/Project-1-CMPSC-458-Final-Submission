@@ -12,25 +12,25 @@ Open the .exe file and you will be presented with some boxes with awesome faces 
 
 To control the boxes:
 - U: Increase rotation rate in X axis
-    - J: Decrease rotation rate in X axis
-    - I: Increase rotation rate in Y axis
-    - K: Decrease rotation rate in Y axis
-    - O: Increase rotation rate in Z axis
-    - L: Decrease rotation rate in Z axis
-    - R: Reset all transformations
-    - P: Uniform scaling in all axis
-    - Shift + U: Increase scale in X axis
-    - Shift + J: Decrease scale in X axis
-    - Shift + I: Increase scale in Y axis
-    - Shift + K: Decrease scale in Y axis
-    - Shift + O: Increase scale in Z axis
-    - Shift + L: Decrease scale in Z axis
-    - Ctrl + U: Positive translation in X axis
-    - Ctrl + J: Negative translation in X axis
-    - Ctrl + I: Positive translation in Y axis
-    - Ctrl + K: Negative translation in Y axis
-    - Ctrl + O: Positive translation in Z axis
-    - Ctrl + L: Negative translation in Z axis
+- J: Decrease rotation rate in X axis
+- I: Increase rotation rate in Y axis
+- K: Decrease rotation rate in Y axis
+- O: Increase rotation rate in Z axis
+- L: Decrease rotation rate in Z axis
+- R: Reset all transformations
+- P: Uniform scaling in all axis
+- Shift + U: Increase scale in X axis
+- Shift + J: Decrease scale in X axis
+- Shift + I: Increase scale in Y axis
+- Shift + K: Decrease scale in Y axis
+- Shift + O: Increase scale in Z axis
+- Shift + L: Decrease scale in Z axis
+- Ctrl + U: Positive translation in X axis
+- Ctrl + J: Negative translation in X axis
+- Ctrl + I: Positive translation in Y axis
+- Ctrl + K: Negative translation in Y axis
+- Ctrl + O: Positive translation in Z axis
+- Ctrl + L: Negative translation in Z axis
 
 ## Project description
 
