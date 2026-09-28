@@ -213,7 +213,7 @@ int main(int argc, char **argv)
 		skyboxVertices[i] = vertices[i];
 
 	// Face order: back, front, left, right, bottom, top
-	const float skyboxFaceRotationDegrees[6] = { 0.0f, 0.0f, 90.0f, 90.0f, 90.0f, 90.0f };
+	const float skyboxFaceRotationDegrees[6] = { 0.0f, 0.0f, 90.0f, 90.0f, 90.0f, 90.0f };	//Had to rotate some of the faces to make the skybox loook normal
 	const bool skyboxFaceMirrored[6] = { true, false, false, false, true, false };
 	for (unsigned int face = 0; face < 6; ++face)	// Rotating the UV coordinates of each face of the skybox to match the orientation of the texture images
 	{
@@ -263,8 +263,14 @@ int main(int argc, char **argv)
 	ourShader.setInt("texture1", 0);
 	ourShader.setInt("texture2", 1);
 
-	// init heightmap (defined in heightmap.hpp)
-	Heightmap heightmap(projectAssetPath("Project_1/Media/heightmaps/hflab4.jpg").c_str());
+	// Choose the heightmap image and terrain texture here. Place a custom terrain
+	// texture in Project_1/Media/textures and update terrainTexturePath.
+	//hflab4.jpg, spiral.jpg,heightmap1.jpeg
+	const char* heightmapImagePath = "Project_1/Media/heightmaps/spiral.jpg";
+	//PrototypeHeightMapTexture.png, Texture1.png, dirtTexture.jpg
+	const char* terrainTexturePath = "Project_1/Media/textures/Texture1.png";
+	unsigned int terrainTexture = loadTexture(projectAssetPath(terrainTexturePath).c_str());
+	Heightmap heightmap(projectAssetPath(heightmapImagePath).c_str(), 80.0f, 12.0f, -48.0f);
 	
 	
 
@@ -342,7 +348,7 @@ int main(int argc, char **argv)
 		skyboxModel = glm::translate(skyboxModel, glm::vec3(0.0f, 0.0f, 1.0f));
 		skyboxModel = glm::scale(skyboxModel, glm::vec3(100.0f));
 		ourShader.setMat4("model", skyboxModel);
-		
+
 		glBindVertexArray(skyboxVAO);
 		for (unsigned int face = 0; face < 6; ++face)
 		{
@@ -353,8 +359,8 @@ int main(int argc, char **argv)
 			glDrawArrays(GL_TRIANGLES, face * 6, 6);
 		}
 
-		// Draw the heightmap (defined in heightmap.hpp)  Similar to above but you have to write it.
-		//heightmap.Draw(ourShader, box_texture);
+		// Draw the textured terrain below the skybox center.
+		heightmap.Draw(ourShader, terrainTexture);
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		// -------------------------------------------------------------------------------
@@ -368,6 +374,7 @@ int main(int argc, char **argv)
 	glDeleteVertexArrays(1, &skyboxVAO);
 	glDeleteBuffers(1, &VBO);
 	glDeleteBuffers(1, &skyboxVBO);
+	heightmap.Cleanup();
 
 	// glfw: terminate, clearing all previously allocated GLFW resources.
 	// ------------------------------------------------------------------

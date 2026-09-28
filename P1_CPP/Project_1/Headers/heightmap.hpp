@@ -5,8 +5,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include <vector>
+#include <cstddef>
 #include <iostream>
+#include <vector>
 
 #include <shader.hpp>
 
@@ -25,10 +26,8 @@ struct Vertex {
 class Heightmap
 {
 public:
-	//heightmap attributes
-	int width, height;
-
-	// VAO for heightmap
+	int width;
+	int height;
 	unsigned int VAO;
 
 	// pointer to data - data is an array so can be accessed by data[x]. 
@@ -40,114 +39,165 @@ public:
 	// indices for EBO
 	std::vector<unsigned int> indices;
 
-
-	// constructor
-	Heightmap(const char* heightmapPath)
+	// heightmapPath is the path to the heightmap image file
+	// terrainSize is the size of the terrain in world units
+	// heightScale is the scale factor for the height values
+	// baseHeight is the base height of the terrain
+	Heightmap(const char* heightmapPath, float terrainSize = 200.0f,
+		float heightScale = 12.0f, float baseHeight = -48.0f)
+		: width(0), height(0), VAO(0), data(nullptr), VBO(0), EBO(0),
+		  terrainSize(terrainSize), heightScale(heightScale), baseHeight(baseHeight)
 	{
-		// load heightmap data
 		load_heightmap(heightmapPath);
+		if (data == nullptr || width < 2 || height < 2)
+		{
+			if (data != nullptr)
+				stbi_image_free(data);
+			data = nullptr;
+			std::cerr << "Heightmap must be a readable image at least 2x2 pixels: "
+				<< heightmapPath << std::endl;
+			return;
+		}
 
-		// create heightmap verts from the image data - (you have to write this)
 		create_heightmap();
-
-		// free image data
-		stbi_image_free(data);
-
-		// create_indices - create the indices array (you have to write this)
-		//  This is an optional step so and you can ignore this if you want to just create all the triangles rather than
-		//     using this to index it.
 		create_indices();
-
-		// setup the VBO, VAO, and EBO and send the information to OpenGL (you need to write this)
+		stbi_image_free(data);
+		data = nullptr;
 		setup_heightmap();
 	}
 
-	// render the heightmap mesh (you need to write this)
-	void Draw(Shader shader, unsigned int textureID)
+	~Heightmap()
 	{
-		// You must:
-		// -  active proper texture unit before binding
-		// -  bind the texture
-		// -  draw mesh (using GL_TRIANGLES is the most reliable way)
+		Cleanup();
+	}
 
+	void Cleanup()
+	{
+		if (EBO != 0)
+		{
+			glDeleteBuffers(1, &EBO);
+			EBO = 0;
+		}
+		if (VBO != 0)
+		{
+			glDeleteBuffers(1, &VBO);
+			VBO = 0;
+		}
+		if (VAO != 0)
+		{
+			glDeleteVertexArrays(1, &VAO);
+			VAO = 0;
+		}
+	}
 
+	Heightmap(const Heightmap&) = delete;
+	Heightmap& operator=(const Heightmap&) = delete;
 
+	void Draw(const Shader& shader, unsigned int textureID) const
+	{
+		if (VAO == 0 || indices.empty())
+			return;
 
-		// always good practice to set everything back to defaults once configured.
+		// The fragment shader blends texture units 0 and 1, so bind the chosen
+		// terrain texture to both units to display it without mixing other images.
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, textureID);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, textureID);
+
+		shader.setMat4("model", glm::mat4(1.0f));
+		glBindVertexArray(VAO);
+		glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()),
+			GL_UNSIGNED_INT, nullptr);
+		glBindVertexArray(0);
 		glActiveTexture(GL_TEXTURE0);
 	}
 
 private:
+	unsigned int VBO;
+	unsigned int EBO;
+	float terrainSize;
+	float heightScale;
+	float baseHeight;
 
-	unsigned int VBO, EBO;
-
-	// Load the image data
 	void load_heightmap(const char* heightmapPath)
 	{
-		int nrChannels;
-		data = stbi_load(heightmapPath, &width, &height, &nrChannels, 0);
-		if (!data)
-		{
-			std::cout << "Failed to load heightmap" << std::endl;
-		}
-
+		int channels = 0;
+		// Request one channel so each sample is a consistent grayscale intensity.
+		data = stbi_load(heightmapPath, &width, &height, &channels, 1);
+		if (data == nullptr)
+			std::cerr << "Failed to load heightmap: " << heightmapPath << std::endl;
 	}
 
-
-	// Make Vertex:  take x and y position return a new vertex for that position which includes 
-	//  the position and the texture coordinates
-	//     The data is in a char c-array and can be access via  
-	//           float(data[x*height + y]) / 255.0f 
-	//      where x and y are varables between 0 and width or height  (just use a black and white image for simplicity)
-
-	/*
-	Vertex make_vertex(int x, int y)
-
-	{
-	Vertex v;
-	//XYZ coords
-	v.Position.x =
-	v.Position.y =
-	v.Position.z =
-
-	//Texture Coords
-	v.TexCoords.x =
-	v.TexCoords.y =
-
-	return v;
-	}
-	*/
-
-	// convert heightmap to floats, set position and texture vertices using the subfunction make_vertex
 	void create_heightmap()
 	{
+		vertices.reserve(static_cast<std::size_t>(width) * static_cast<std::size_t>(height));
+		for (int row = 0; row < height; ++row)
+		{
+			for (int column = 0; column < width; ++column)
+			{
+				const float u = static_cast<float>(column) / static_cast<float>(width - 1);
+				const float v = static_cast<float>(row) / static_cast<float>(height - 1);
+				const float intensity = static_cast<float>(data[row * width + column]) / 255.0f;
 
-
-
+				Vertex vertex;
+				vertex.Position = glm::vec3(
+					(u - 0.5f) * terrainSize,
+					baseHeight + intensity * heightScale,
+					(0.5f - v) * terrainSize);
+				vertex.TexCoords = glm::vec2(u, v);
+				vertices.push_back(vertex);
+			}
+		}
 	}
 
-
-	// create the indicies array for the EBO (so what indicies correspond with triangles to for rendering)
-	//  This is an optional step so and you can ignore this if you want to just create all the triangles rather than
-	//     using this to index it.
 	void create_indices()
 	{
+		indices.reserve(static_cast<std::size_t>(width - 1) *
+			static_cast<std::size_t>(height - 1) * 6);
+		for (int row = 0; row < height - 1; ++row)
+		{
+			for (int column = 0; column < width - 1; ++column)
+			{
+				const unsigned int topLeft = static_cast<unsigned int>(row * width + column);
+				const unsigned int topRight = topLeft + 1;
+				const unsigned int bottomLeft = topLeft + static_cast<unsigned int>(width);
+				const unsigned int bottomRight = bottomLeft + 1;
 
-
-
+				// Counter-clockwise winding as viewed from above (+Y).
+				indices.push_back(topLeft);
+				indices.push_back(topRight);
+				indices.push_back(bottomLeft);
+				indices.push_back(topRight);
+				indices.push_back(bottomRight);
+				indices.push_back(bottomLeft);
+			}
+		}
 	}
 
-
-	// create buffers/arrays for the VAO, VBO, and EBO 
-	// Notes
-	//  -  sizeof(Vertex) returns the size of the vertex
-	//  -  to get the pointer the underlying array, you can use "&vertices[0]"
 	void setup_heightmap()
 	{
+		glGenVertexArrays(1, &VAO);
+		glGenBuffers(1, &VBO);
+		glGenBuffers(1, &EBO);
 
+		glBindVertexArray(VAO);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferData(GL_ARRAY_BUFFER,
+			static_cast<GLsizeiptr>(vertices.size() * sizeof(Vertex)),
+			vertices.data(), GL_STATIC_DRAW);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+			static_cast<GLsizeiptr>(indices.size() * sizeof(unsigned int)),
+			indices.data(), GL_STATIC_DRAW);
 
-
-
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+			reinterpret_cast<void*>(offsetof(Vertex, Position)));
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+			reinterpret_cast<void*>(offsetof(Vertex, TexCoords)));
+		glEnableVertexAttribArray(1);
+		glBindVertexArray(0);
 	}
 
 };
