@@ -348,6 +348,8 @@ int main(int argc, char **argv)
 		skyboxModel = glm::translate(skyboxModel, glm::vec3(0.0f, 0.0f, 1.0f));
 		skyboxModel = glm::scale(skyboxModel, glm::vec3(100.0f));
 		ourShader.setMat4("model", skyboxModel);
+		const glm::mat4 skyboxView = glm::mat4(glm::mat3(view));	//so the skybox doesnt translate when the camera translates, only rotates
+		ourShader.setMat4("view", skyboxView);
 
 		glBindVertexArray(skyboxVAO);
 		for (unsigned int face = 0; face < 6; ++face)
@@ -358,6 +360,7 @@ int main(int argc, char **argv)
 			glBindTexture(GL_TEXTURE_2D, skyboxTextures[face]);
 			glDrawArrays(GL_TRIANGLES, face * 6, 6);
 		}
+		ourShader.setMat4("view", view);	// Restore the view matrix for the rest of the scene
 
 		// Draw the textured terrain below the skybox center.
 		heightmap.Draw(ourShader, terrainTexture);
